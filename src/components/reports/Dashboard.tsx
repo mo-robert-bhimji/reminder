@@ -103,7 +103,11 @@ const adjustColorBrightness = (hex: string, factor: number) => {
   return `#${newR.toString(16).padStart(2, '0')}${newG.toString(16).padStart(2, '0')}${newB.toString(16).padStart(2, '0')}`;
 };
 
-export default function Dashboard() {
+interface DashboardProps {
+  onSampleGenerated?: () => void;
+}
+
+export default function Dashboard({ onSampleGenerated }: DashboardProps) {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | '180d' | 'ytd' | 'all'>('30d');
   const [stats, setStats] = useState({
     completed: 0,
@@ -467,6 +471,8 @@ export default function Dashboard() {
   const handleGenerateSample = async () => {
     if (confirm('This will clear existing data and generate 25 sample reminders. Continue?')) {
       await generateSampleData();
+      await loadStats();
+      onSampleGenerated?.();
     }
   };
 
@@ -735,10 +741,10 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={categoryData} layout="vertical">
               <defs>
-                {categoryData.map((entry, index) => (
+                {categoryData.map((_, index) => (
                   <linearGradient key={`gradient-${index}`} id={`categoryGradient-${index}`} x1="0" y1="0" x2="1" y2="0">
-                    <stop offset="0%" stopColor={entry.lightColor} />
-                    <stop offset="100%" stopColor={entry.darkColor} />
+                    <stop offset="0%" stopColor={categoryData[index].lightColor} />
+                    <stop offset="100%" stopColor={categoryData[index].darkColor} />
                   </linearGradient>
                 ))}
               </defs>
@@ -751,10 +757,10 @@ export default function Dashboard() {
                 formatter={(value: number | undefined) => [`${value ?? 0}%`, 'Success Rate' as const]}
               />
               <Bar dataKey="rate" radius={[4, 4, 4, 4]}>
-  {categoryData.map((_, index) => (
-    <Cell key={`cell-${index}`} fill={`url(#categoryGradient-${index})`} />
-  ))}
-</Bar>
+                {categoryData.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={`url(#categoryGradient-${index})`} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

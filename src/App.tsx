@@ -13,27 +13,24 @@ export default function App() {
 
   useEffect(() => {
     loadReminders();
-  }, []);
+  }, [activeTab]);
 
   const loadReminders = async () => {
     const now = new Date();
     const today = now.toISOString().split('T')[0];
     
-    // Get upcoming reminders directly from db
     const allReminders = await db.reminders.where('isActive').equals(1).toArray();
     const upcoming = allReminders.filter(r => {
       const reminderDate = new Date(`${r.scheduledDate} ${r.scheduledTime}`);
       return reminderDate >= now;
     });
     
-    // Get completed today directly from db
     const allLogs = await db.activityLogs.toArray();
     const completed = allLogs.filter(l => {
       const logDate = new Date(l.timestamp).toISOString().split('T')[0];
       return logDate === today && l.action === 'completed';
     });
     
-    // Sort by scheduled date/time
     const sorted = upcoming.sort((a: any, b: any) => {
       const dateA = new Date(`${a.scheduledDate} ${a.scheduledTime}`).getTime();
       const dateB = new Date(`${b.scheduledDate} ${b.scheduledTime}`).getTime();
@@ -49,20 +46,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
+    <div className="min-h-screen bg-gray-950 text-white pb-24">
+      {/* Header */}
       <header className="bg-gray-900 border-b border-gray-800 sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-xl font-bold">Reminder</h1>
-            <button
-              onClick={() => setIsFormOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
-              style={{ backgroundColor: '#2563eb', color: 'white' }}
-            >
-              <Plus className="w-4 h-4" />
-              New
-            </button>
-          </div>
+          <h1 className="text-xl font-bold">{activeTab === 'reminders' ? 'Reminders' : 'Dashboard'}</h1>
+          
+          {/* Tabs */}
           <div className="flex gap-1 mt-4 bg-gray-800 p-1 rounded-lg">
             <button
               onClick={() => setActiveTab('reminders')}
@@ -84,9 +74,11 @@ export default function App() {
         </div>
       </header>
 
+      {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 py-6">
         {activeTab === 'reminders' ? (
           <div className="space-y-4">
+            {/* Today's Progress */}
             <div className="bg-gray-900 p-4 rounded-xl border border-gray-800">
               <div className="flex justify-between items-center">
                 <div>
@@ -99,10 +91,12 @@ export default function App() {
                 </div>
               </div>
             </div>
+
+            {/* Reminders List */}
             {reminders.length === 0 ? (
               <div className="text-center py-12 text-gray-500">
                 <p className="text-lg">No upcoming reminders</p>
-                <p className="text-sm mt-1">Tap "New" to create your first reminder!</p>
+                <p className="text-sm mt-1">Tap + to create your first reminder!</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -113,10 +107,20 @@ export default function App() {
             )}
           </div>
         ) : (
-          <Dashboard />
+          <Dashboard onSampleGenerated={loadReminders} />
         )}
       </main>
 
+      {/* Floating Add Button - Bottom Center */}
+      <button
+        onClick={() => setIsFormOpen(true)}
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition"
+        style={{ backgroundColor: '#2563eb' }}
+      >
+        <Plus className="w-8 h-8 text-white" />
+      </button>
+
+      {/* New Reminder Form Modal */}
       <ReminderForm
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
