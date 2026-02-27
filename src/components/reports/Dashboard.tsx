@@ -513,7 +513,7 @@ export default function Dashboard({ onSampleGenerated }: DashboardProps) {
   return (
     <div className="p-4 space-y-6 bg-gray-950 min-h-screen">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-white">Analytics Dashboard</h2>
+        
         <div className="flex gap-2">
           <button
             onClick={exportData}
