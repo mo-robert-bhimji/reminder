@@ -5,6 +5,8 @@ import ReminderCard from './components/reminders/ReminderCard';
 import ReminderForm from './components/reminders/ReminderForm';
 import Dashboard from './components/reports/Dashboard';
 
+import { Analytics } from "@vercel/analytics/react"
+
 export default function App() {
   const [showDashboard, setShowDashboard] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -96,6 +98,7 @@ export default function App() {
             <BarChart3 className="w-5 h-5" />
             Dashboard
           </button>
+<Analytics />
         </div>
       </header>
 
